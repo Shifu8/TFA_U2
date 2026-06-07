@@ -1,0 +1,14 @@
+# Archivo: requirements.txt
+# Descripcion: Requisitos de entorno para ejecutar el proyecto.
+# Responsable: Pardo
+
+# Backend Java/Spring Boot
+# - JDK 21 o superior
+# - Maven 3.9 o superior
+
+# Frontend React
+# - Node.js 20 o superior
+# - npm 10 o superior
+
+# Este proyecto no requiere dependencias Python.
+

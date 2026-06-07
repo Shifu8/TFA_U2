@@ -1,0 +1,23 @@
+# Dependencias
+node_modules/
+frontend/node_modules/
+
+# Builds
+dist/
+frontend/dist/
+target/
+backend/target/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+backend/.venv/
+
+# Logs locales
+*.log
+
+# Entorno
+.env
+.env.*
