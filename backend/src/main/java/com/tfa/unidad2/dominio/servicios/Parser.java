@@ -214,8 +214,71 @@ public class Parser {
         pasos.add("SN SV");
         pasos.add(patronSujeto + " SV");
         pasos.add(patronSujeto + " V C");
-        pasos.add(patronSujeto + " V " + patronComplemento);
+        pasos.addAll(generarDerivacionComplemento(patronSujeto + " V ", patronComplemento));
         return new ArrayList<>(pasos);
+    }
+
+    private List<String> generarDerivacionComplemento(String prefijo, String patronComplemento) {
+        List<String> pasos = new ArrayList<>();
+
+        if ("ADV".equals(patronComplemento)) {
+            pasos.add(prefijo + "ADV");
+            return pasos;
+        }
+
+        List<String> tokensPatron = List.of(patronComplemento.split(" "));
+        List<String> patronesSn = new ArrayList<>();
+        String produccionComplemento;
+
+        if ("PREP".equals(tokensPatron.get(0))) {
+            int indice = 1;
+            String primerSn = leerPatronSn(tokensPatron, indice);
+            patronesSn.add(primerSn);
+            indice += contarTokensSn(tokensPatron, indice);
+
+            if (indice < tokensPatron.size() && "PREP".equals(tokensPatron.get(indice))) {
+                String segundoSn = leerPatronSn(tokensPatron, indice + 1);
+                patronesSn.add(segundoSn);
+                produccionComplemento = "PREP SN PREP SN";
+            } else {
+                produccionComplemento = "PREP SN";
+            }
+        } else {
+            int indice = 0;
+            String primerSn = leerPatronSn(tokensPatron, indice);
+            patronesSn.add(primerSn);
+            indice += contarTokensSn(tokensPatron, indice);
+
+            if (indice < tokensPatron.size() && "PREP".equals(tokensPatron.get(indice))) {
+                String segundoSn = leerPatronSn(tokensPatron, indice + 1);
+                patronesSn.add(segundoSn);
+                produccionComplemento = "SN PREP SN";
+            } else {
+                produccionComplemento = "SN";
+            }
+        }
+
+        String pasoActual = prefijo + produccionComplemento;
+        pasos.add(pasoActual);
+
+        for (String patronSn : patronesSn) {
+            pasoActual = pasoActual.replaceFirst("\\bSN\\b", patronSn);
+            pasos.add(pasoActual);
+        }
+
+        return pasos;
+    }
+
+    private String leerPatronSn(List<String> tokensPatron, int indice) {
+        int cantidad = contarTokensSn(tokensPatron, indice);
+        return String.join(" ", tokensPatron.subList(indice, indice + cantidad));
+    }
+
+    private int contarTokensSn(List<String> tokensPatron, int indice) {
+        if (indice < tokensPatron.size() && "ART".equals(tokensPatron.get(indice))) {
+            return 2;
+        }
+        return 1;
     }
 
     private String codigoErrorLexico(String lexema) {

@@ -113,6 +113,32 @@ class AnalizadorOracionTest {
     }
 
     @Test
+    void generaDerivacionPorLaIzquierdaConComplementoNominal() {
+        ResultadoAnalisis resultado = casoUso.analizar("Juan escribe una carta.");
+
+        assertEquals(List.of(
+                "S",
+                "SN SV",
+                "SUST SV",
+                "SUST V C",
+                "SUST V SN",
+                "SUST V ART SUST"
+        ), resultado.getDerivacion());
+    }
+
+    @Test
+    void generaDerivacionPorLaIzquierdaConComplementoPreposicionalDoble() {
+        ResultadoAnalisis resultado = casoUso.analizar("El perro mordió al hombre en el parque.");
+
+        assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SN PREP SN"));
+        assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SUST PREP SN"));
+        assertEquals(
+                "ART SUST V PREP SUST PREP ART SUST",
+                resultado.getDerivacion().get(resultado.getDerivacion().size() - 1)
+        );
+    }
+
+    @Test
     void identificaSujetoYVerbo() {
         ResultadoAnalisis resultado = casoUso.analizar("Juan escribe una carta.");
 

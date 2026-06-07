@@ -1,5 +1,5 @@
 // Archivo: DerivacionPasoAPaso.jsx
-// Descripción: Presenta la derivación sintáctica paso a paso.
+// Descripción: Presenta la derivación sintáctica por la izquierda paso a paso.
 // Responsable: Brandon
 
 export default function DerivacionPasoAPaso({ derivacion = [] }) {
@@ -9,7 +9,7 @@ export default function DerivacionPasoAPaso({ derivacion = [] }) {
 
   return (
     <section className="panel">
-      <h2>Derivación</h2>
+      <h2>Derivación por la izquierda</h2>
       <ol className="derivacion">
         {derivacion.map((paso, indice) => (
           <li key={`${paso}-${indice}`}>
