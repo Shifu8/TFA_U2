@@ -1,0 +1,92 @@
+{
+  "tokens": {
+    "ART": [
+      { "lexema": "el", "genero": "m", "numero": "s" },
+      { "lexema": "la", "genero": "f", "numero": "s" },
+      { "lexema": "los", "genero": "m", "numero": "p" },
+      { "lexema": "las", "genero": "f", "numero": "p" },
+      { "lexema": "un", "genero": "m", "numero": "s" },
+      { "lexema": "una", "genero": "f", "numero": "s" }
+    ],
+    "PRON": [
+      { "lexema": "yo" },
+      { "lexema": "tu" },
+      { "lexema": "t\u00fa" },
+      { "lexema": "\u00e9l" },
+      { "lexema": "ella" },
+      { "lexema": "nosotros" },
+      { "lexema": "nosotras" },
+      { "lexema": "ellos" },
+      { "lexema": "ellas" }
+    ],
+    "SUST": [
+      { "lexema": "perro", "genero": "m", "numero": "s" },
+      { "lexema": "perra", "genero": "f", "numero": "s" },
+      { "lexema": "perros", "genero": "m", "numero": "p" },
+      { "lexema": "perras", "genero": "f", "numero": "p" },
+      { "lexema": "ni\u00f1a", "genero": "f", "numero": "s" },
+      { "lexema": "nina", "genero": "f", "numero": "s" },
+      { "lexema": "ni\u00f1o", "genero": "m", "numero": "s" },
+      { "lexema": "nino", "genero": "m", "numero": "s" },
+      { "lexema": "estudiante", "genero": "c", "numero": "s" },
+      { "lexema": "estudiantes", "genero": "c", "numero": "p" },
+      { "lexema": "mar\u00eda", "genero": "f", "numero": "s" },
+      { "lexema": "maria", "genero": "f", "numero": "s" },
+      { "lexema": "juan", "genero": "m", "numero": "s" },
+      { "lexema": "pedro", "genero": "m", "numero": "s" },
+      { "lexema": "profesor", "genero": "m", "numero": "s" },
+      { "lexema": "profesora", "genero": "f", "numero": "s" },
+      { "lexema": "gato", "genero": "m", "numero": "s" },
+      { "lexema": "gata", "genero": "f", "numero": "s" },
+      { "lexema": "hombre", "genero": "m", "numero": "s" },
+      { "lexema": "hombres", "genero": "m", "numero": "p" },
+      { "lexema": "parque", "genero": "m", "numero": "s" },
+      { "lexema": "telescopio", "genero": "m", "numero": "s" },
+      { "lexema": "casa", "genero": "f", "numero": "s" },
+      { "lexema": "carta", "genero": "f", "numero": "s" },
+      { "lexema": "cartas", "genero": "f", "numero": "p" },
+      { "lexema": "libro", "genero": "m", "numero": "s" },
+      { "lexema": "libros", "genero": "m", "numero": "p" },
+      { "lexema": "arroz", "genero": "m", "numero": "s" },
+      { "lexema": "matem\u00e1ticas", "genero": "f", "numero": "p" },
+      { "lexema": "matematicas", "genero": "f", "numero": "p" },
+      { "lexema": "f\u00fatbol", "genero": "m", "numero": "s" },
+      { "lexema": "futbol", "genero": "m", "numero": "s" },
+      { "lexema": "pan", "genero": "m", "numero": "s" },
+      { "lexema": "televisi\u00f3n", "genero": "f", "numero": "s" },
+      { "lexema": "television", "genero": "f", "numero": "s" },
+      { "lexema": "clase", "genero": "f", "numero": "s" }
+    ],
+    "V": [
+      { "lexema": "corre" },
+      { "lexema": "estudia" },
+      { "lexema": "come" },
+      { "lexema": "lee" },
+      { "lexema": "escribe" },
+      { "lexema": "duerme" },
+      { "lexema": "compra" },
+      { "lexema": "mira" },
+      { "lexema": "miran" },
+      { "lexema": "mordi\u00f3" },
+      { "lexema": "mordio" },
+      { "lexema": "vio" },
+      { "lexema": "explica" },
+      { "lexema": "jugamos" }
+    ],
+    "PREP": [
+      { "lexema": "a" },
+      { "lexema": "al" },
+      { "lexema": "con" },
+      { "lexema": "de" },
+      { "lexema": "en" },
+      { "lexema": "para" }
+    ],
+    "ADV": [
+      { "lexema": "r\u00e1pido" },
+      { "lexema": "rapido" },
+      { "lexema": "tranquilo" },
+      { "lexema": "tranquila" },
+      { "lexema": "lentamente" }
+    ]
+  }
+}

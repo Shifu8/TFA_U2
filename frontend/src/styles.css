@@ -524,6 +524,12 @@ td {
   list-style: none;
 }
 
+.derivacion-razon {
+  margin: 6px 0 0;
+  color: #dbeafe;
+  line-height: 1.45;
+}
+
 .derivacion li {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);

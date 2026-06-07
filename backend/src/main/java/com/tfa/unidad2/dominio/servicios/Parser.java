@@ -8,6 +8,7 @@ import com.tfa.unidad2.dominio.entidades.ErrorAnalisis;
 import com.tfa.unidad2.dominio.entidades.NodoArbol;
 import com.tfa.unidad2.dominio.entidades.ResultadoAnalisis;
 import com.tfa.unidad2.dominio.entidades.TokenAnalisis;
+import com.tfa.unidad2.dominio.gramatica.Gramatica;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,10 +17,20 @@ import java.util.Set;
 public class Parser {
 
     private static final Set<String> INICIOS_SN = Set.of("ART", "PRON", "SUST");
+
+    private final Gramatica gramatica;
     private List<TokenAnalisis> tokens = List.of();
     private int posicion;
 
-    public ResultadoAnalisis analizar(List<TokenAnalisis> tokens) {
+    public Parser() {
+        this(new Gramatica());
+    }
+
+    public Parser(Gramatica gramatica) {
+        this.gramatica = gramatica;
+    }
+
+    public synchronized ResultadoAnalisis analizar(List<TokenAnalisis> tokens) {
         this.tokens = tokens;
         this.posicion = 0;
 
@@ -60,27 +71,26 @@ public class Parser {
             }
 
             TokenAnalisis verbo = consumir("V");
-
-            if (fin()) {
-                throw new ErrorSintactico("Falta el complemento despues del verbo.", posicion, "FALTA_COMPLEMENTO");
-            }
-
-            Fragmento complemento = parsearComplemento();
+            Fragmento complemento = fin() ? null : parsearComplemento();
 
             if (!fin()) {
                 throw new ErrorSintactico(
                         "Token inesperado \"" + actual().lexema() + "\" despues del complemento.",
                         posicion,
-                        "TOKEN_INESPERADO"
+                        "TOKEN_INESPERADO",
+                        actual().lexema()
                 );
+            }
+
+            List<NodoArbol> hijosSv = new ArrayList<>();
+            hijosSv.add(hoja(verbo));
+            if (complemento != null) {
+                hijosSv.add(complemento.nodo());
             }
 
             NodoArbol arbol = new NodoArbol("S", List.of(
                     sujeto.nodo(),
-                    new NodoArbol("SV", List.of(
-                            hoja(verbo),
-                            complemento.nodo()
-                    ))
+                    new NodoArbol("SV", hijosSv)
             ));
 
             ResultadoAnalisis resultado = new ResultadoAnalisis();
@@ -88,9 +98,12 @@ public class Parser {
             resultado.setMensaje("Oración válida");
             resultado.setSujeto(unirLexemas(sujeto.tokens()));
             resultado.setVerbo(verbo.lexema());
-            resultado.setComplemento(unirLexemas(complemento.tokens()));
+            resultado.setComplemento(complemento == null ? "" : unirLexemas(complemento.tokens()));
             resultado.setTokens(tokens);
-            resultado.setDerivacion(generarDerivacion(sujeto.patron(), complemento.patron()));
+            resultado.setDerivacion(generarDerivacion(
+                    sujeto.patron(),
+                    complemento == null ? "" : complemento.patron()
+            ));
             resultado.setArbol(arbol);
             resultado.setProcesadosHasta(tokens.size());
             return resultado;
@@ -98,6 +111,7 @@ public class Parser {
             ResultadoAnalisis resultado = baseInvalida(error.getMessage(), error.getCodigo(), error.getPosicion());
             resultado.setTokens(tokens);
             resultado.setProcesadosHasta(error.getPosicion());
+            resultado.setError(new ErrorAnalisis(error.getCodigo(), error.getPosicion(), error.getLexema()));
             return resultado;
         }
     }
@@ -118,10 +132,13 @@ public class Parser {
                 throw new ErrorSintactico(
                         "Falta un sustantivo despues del articulo del " + contexto + ".",
                         posicion,
-                        "FALTA_SUSTANTIVO"
+                        "FALTA_SUSTANTIVO",
+                        articulo.lexema()
                 );
             }
+
             TokenAnalisis sustantivo = consumir("SUST");
+            validarConcordancia(articulo, sustantivo);
             return new Fragmento(
                     new NodoArbol("SN", List.of(hoja(articulo), hoja(sustantivo))),
                     List.of(articulo, sustantivo),
@@ -143,7 +160,19 @@ public class Parser {
         String mensaje = "FALTA_SUJETO".equals(codigo)
                 ? "Falta el sujeto antes del verbo."
                 : "No se encontro un sintagma nominal valido para el " + contexto + ".";
-        throw new ErrorSintactico(mensaje, posicion, codigo);
+        throw new ErrorSintactico(mensaje, posicion, codigo, token.lexema());
+    }
+
+    private void validarConcordancia(TokenAnalisis articulo, TokenAnalisis sustantivo) {
+        if (!gramatica.concuerdanArticuloSustantivo(articulo.lexema(), sustantivo.lexema())) {
+            throw new ErrorSintactico(
+                    "Concordancia inválida: el artículo \"" + articulo.lexema()
+                            + "\" no concuerda con el sustantivo \"" + sustantivo.lexema() + "\".",
+                    articulo.posicion(),
+                    "CONCORDANCIA_INVALIDA",
+                    articulo.lexema() + " " + sustantivo.lexema()
+            );
+        }
     }
 
     private Fragmento parsearComplemento() {
@@ -151,60 +180,52 @@ public class Parser {
             throw new ErrorSintactico("Falta el complemento despues del verbo.", posicion, "FALTA_COMPLEMENTO");
         }
 
+        List<TokenAnalisis> tokensFragmento = new ArrayList<>();
+        List<NodoArbol> hijos = new ArrayList<>();
+        List<String> patrones = new ArrayList<>();
+
+        while (!fin()) {
+            Fragmento unidad = parsearUnidadComplemento();
+            tokensFragmento.addAll(unidad.tokens());
+            hijos.add(unidad.nodo());
+            patrones.add(unidad.patron());
+        }
+
+        return new Fragmento(new NodoArbol("C", hijos), tokensFragmento, String.join(" ", patrones));
+    }
+
+    private Fragmento parsearUnidadComplemento() {
         TokenAnalisis token = actual();
+
         if ("ADV".equals(token.token())) {
             TokenAnalisis adverbio = consumir("ADV");
-            return new Fragmento(new NodoArbol("C", List.of(hoja(adverbio))), List.of(adverbio), "ADV");
+            return new Fragmento(hoja(adverbio), List.of(adverbio), "ADV");
         }
 
         if ("PREP".equals(token.token())) {
-            TokenAnalisis primeraPrep = consumir("PREP");
-            Fragmento primerSn = parsearSn("complemento");
+            TokenAnalisis preposicion = consumir("PREP");
+            Fragmento sn = parsearSn("complemento");
+
             List<TokenAnalisis> tokensFragmento = new ArrayList<>();
-            tokensFragmento.add(primeraPrep);
-            tokensFragmento.addAll(primerSn.tokens());
+            tokensFragmento.add(preposicion);
+            tokensFragmento.addAll(sn.tokens());
 
-            List<NodoArbol> hijos = new ArrayList<>();
-            hijos.add(hoja(primeraPrep));
-            hijos.add(primerSn.nodo());
-            String patron = "PREP " + primerSn.patron();
-
-            if (!fin() && "PREP".equals(actual().token())) {
-                TokenAnalisis segundaPrep = consumir("PREP");
-                Fragmento segundoSn = parsearSn("complemento preposicional");
-                tokensFragmento.add(segundaPrep);
-                tokensFragmento.addAll(segundoSn.tokens());
-                hijos.add(new NodoArbol("PP", List.of(hoja(segundaPrep), segundoSn.nodo())));
-                patron = patron + " PREP " + segundoSn.patron();
-            }
-
-            return new Fragmento(new NodoArbol("C", hijos), tokensFragmento, patron);
+            return new Fragmento(
+                    new NodoArbol("PP", List.of(hoja(preposicion), sn.nodo())),
+                    tokensFragmento,
+                    "PREP " + sn.patron()
+            );
         }
 
         if (INICIOS_SN.contains(token.token())) {
-            Fragmento sn = parsearSn("complemento");
-            List<TokenAnalisis> tokensFragmento = new ArrayList<>(sn.tokens());
-            List<NodoArbol> hijos = new ArrayList<>();
-            hijos.add(sn.nodo());
-            String patron = sn.patron();
-
-            if (!fin() && "PREP".equals(actual().token())) {
-                TokenAnalisis prep = consumir("PREP");
-                Fragmento segundoSn = parsearSn("complemento preposicional");
-                tokensFragmento.add(prep);
-                tokensFragmento.addAll(segundoSn.tokens());
-                hijos.add(hoja(prep));
-                hijos.add(segundoSn.nodo());
-                patron = patron + " PREP " + segundoSn.patron();
-            }
-
-            return new Fragmento(new NodoArbol("C", hijos), tokensFragmento, patron);
+            return parsearSn("complemento");
         }
 
         throw new ErrorSintactico(
                 "Falta un complemento valido despues del verbo.",
                 posicion,
-                "COMPLEMENTO_INVALIDO"
+                "COMPLEMENTO_INVALIDO",
+                token.lexema()
         );
     }
 
@@ -213,65 +234,96 @@ public class Parser {
         pasos.add("S");
         pasos.add("SN SV");
         pasos.add(patronSujeto + " SV");
+
+        if (patronComplemento == null || patronComplemento.isBlank()) {
+            pasos.add(patronSujeto + " V");
+            return new ArrayList<>(pasos);
+        }
+
         pasos.add(patronSujeto + " V C");
-        pasos.addAll(generarDerivacionComplemento(patronSujeto + " V ", patronComplemento));
+        pasos.addAll(generarDerivacionComplemento(patronSujeto + " V C", patronComplemento));
         return new ArrayList<>(pasos);
     }
 
-    private List<String> generarDerivacionComplemento(String prefijo, String patronComplemento) {
+    private List<String> generarDerivacionComplemento(String pasoConComplemento, String patronComplemento) {
         List<String> pasos = new ArrayList<>();
+        List<String> componentes = separarComponentesComplemento(patronComplemento);
+        String pasoActual = pasoConComplemento;
 
-        if ("ADV".equals(patronComplemento)) {
-            pasos.add(prefijo + "ADV");
-            return pasos;
-        }
+        for (int indice = 0; indice < componentes.size(); indice++) {
+            String componente = componentes.get(indice);
+            boolean ultimo = indice == componentes.size() - 1;
+            String produccion = produccionComponente(componente);
+            String reemplazo = ultimo ? produccion : produccion + " C";
 
-        List<String> tokensPatron = List.of(patronComplemento.split(" "));
-        List<String> patronesSn = new ArrayList<>();
-        String produccionComplemento;
-
-        if ("PREP".equals(tokensPatron.get(0))) {
-            int indice = 1;
-            String primerSn = leerPatronSn(tokensPatron, indice);
-            patronesSn.add(primerSn);
-            indice += contarTokensSn(tokensPatron, indice);
-
-            if (indice < tokensPatron.size() && "PREP".equals(tokensPatron.get(indice))) {
-                String segundoSn = leerPatronSn(tokensPatron, indice + 1);
-                patronesSn.add(segundoSn);
-                produccionComplemento = "PREP SN PREP SN";
-            } else {
-                produccionComplemento = "PREP SN";
-            }
-        } else {
-            int indice = 0;
-            String primerSn = leerPatronSn(tokensPatron, indice);
-            patronesSn.add(primerSn);
-            indice += contarTokensSn(tokensPatron, indice);
-
-            if (indice < tokensPatron.size() && "PREP".equals(tokensPatron.get(indice))) {
-                String segundoSn = leerPatronSn(tokensPatron, indice + 1);
-                patronesSn.add(segundoSn);
-                produccionComplemento = "SN PREP SN";
-            } else {
-                produccionComplemento = "SN";
-            }
-        }
-
-        String pasoActual = prefijo + produccionComplemento;
-        pasos.add(pasoActual);
-
-        for (String patronSn : patronesSn) {
-            pasoActual = pasoActual.replaceFirst("\\bSN\\b", patronSn);
+            pasoActual = reemplazarPrimerNoTerminal(pasoActual, "C", reemplazo);
             pasos.add(pasoActual);
+
+            String patronSn = patronSnDeComponente(componente);
+            if (!patronSn.isBlank()) {
+                pasoActual = reemplazarPrimerNoTerminal(pasoActual, "SN", patronSn);
+                pasos.add(pasoActual);
+            }
         }
 
         return pasos;
     }
 
-    private String leerPatronSn(List<String> tokensPatron, int indice) {
-        int cantidad = contarTokensSn(tokensPatron, indice);
-        return String.join(" ", tokensPatron.subList(indice, indice + cantidad));
+    private List<String> separarComponentesComplemento(String patronComplemento) {
+        List<String> tokensPatron = List.of(patronComplemento.split(" "));
+        List<String> componentes = new ArrayList<>();
+        int indice = 0;
+
+        while (indice < tokensPatron.size()) {
+            String token = tokensPatron.get(indice);
+
+            if ("ADV".equals(token)) {
+                componentes.add("ADV");
+                indice++;
+                continue;
+            }
+
+            if ("PREP".equals(token)) {
+                int inicio = indice;
+                indice++;
+                int cantidadSn = contarTokensSn(tokensPatron, indice);
+                indice += cantidadSn;
+                componentes.add(String.join(" ", tokensPatron.subList(inicio, indice)));
+                continue;
+            }
+
+            int cantidadSn = contarTokensSn(tokensPatron, indice);
+            componentes.add(String.join(" ", tokensPatron.subList(indice, indice + cantidadSn)));
+            indice += cantidadSn;
+        }
+
+        return componentes;
+    }
+
+    private String produccionComponente(String componente) {
+        if ("ADV".equals(componente)) {
+            return "ADV";
+        }
+        if (componente.startsWith("PREP ")) {
+            return "PREP SN";
+        }
+        return "SN";
+    }
+
+    private String patronSnDeComponente(String componente) {
+        if ("ADV".equals(componente)) {
+            return "";
+        }
+
+        List<String> tokensComponente = List.of(componente.split(" "));
+        if ("PREP".equals(tokensComponente.get(0))) {
+            return String.join(" ", tokensComponente.subList(1, tokensComponente.size()));
+        }
+        return componente;
+    }
+
+    private String reemplazarPrimerNoTerminal(String texto, String noTerminal, String reemplazo) {
+        return texto.replaceFirst("\\b" + noTerminal + "\\b", reemplazo);
     }
 
     private int contarTokensSn(List<String> tokensPatron, int indice) {

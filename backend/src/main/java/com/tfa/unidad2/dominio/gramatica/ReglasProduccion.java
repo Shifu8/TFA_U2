@@ -13,15 +13,16 @@ public final class ReglasProduccion {
             "SN -> ART SUST",
             "SN -> PRON",
             "SN -> SUST",
+            "SV -> V",
             "SV -> V C",
             "C -> ADV",
             "C -> SN",
             "C -> PREP SN",
-            "C -> SN PREP SN",
-            "C -> PREP SN PREP SN"
+            "C -> ADV C",
+            "C -> SN C",
+            "C -> PREP SN C"
     );
 
     private ReglasProduccion() {
     }
 }
-

@@ -55,6 +55,38 @@ class AnalizadorOracionTest {
     }
 
     @Test
+    void rechazaConcordanciaIncorrectaEntreArticuloYSustantivo() {
+        ResultadoAnalisis resultado = casoUso.analizar("La perro come tranquilo.");
+
+        assertFalse(resultado.isValida());
+        assertEquals("CONCORDANCIA_INVALIDA", resultado.getError().getCodigo());
+        assertEquals("La perro", resultado.getError().getLexema());
+    }
+
+    @Test
+    void aceptaOracionSinComplemento() {
+        ResultadoAnalisis resultado = casoUso.analizar("El perro come.");
+
+        assertTrue(resultado.isValida());
+        assertEquals("El perro", resultado.getSujeto());
+        assertEquals("come", resultado.getVerbo());
+        assertEquals("", resultado.getComplemento());
+        assertEquals("ART SUST V", resultado.getDerivacion().get(resultado.getDerivacion().size() - 1));
+    }
+
+    @Test
+    void aceptaComplementoLargoPorPartes() {
+        ResultadoAnalisis resultado = casoUso.analizar("El perro come tranquilo en la casa.");
+
+        assertTrue(resultado.isValida());
+        assertEquals("tranquilo en la casa", resultado.getComplemento());
+        assertEquals(
+                "ART SUST V ADV PREP ART SUST",
+                resultado.getDerivacion().get(resultado.getDerivacion().size() - 1)
+        );
+    }
+
+    @Test
     void rechazaNumeros() {
         ResultadoAnalisis resultado = casoUso.analizar("El perro corre 123.");
 
@@ -130,7 +162,7 @@ class AnalizadorOracionTest {
     void generaDerivacionPorLaIzquierdaConComplementoPreposicionalDoble() {
         ResultadoAnalisis resultado = casoUso.analizar("El perro mordió al hombre en el parque.");
 
-        assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SN PREP SN"));
+        assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SN C"));
         assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SUST PREP SN"));
         assertEquals(
                 "ART SUST V PREP SUST PREP ART SUST",
@@ -149,6 +181,16 @@ class AnalizadorOracionTest {
     @Test
     void detectaAmbiguedadSintactica() {
         ResultadoAnalisis resultado = casoUso.analizar("El perro mordió al hombre en el parque.");
+
+        assertTrue(resultado.isValida());
+        assertTrue(resultado.isAmbiguo());
+        assertNotNull(resultado.getAmbiguedad());
+        assertEquals(2, resultado.getAmbiguedad().getInterpretaciones().size());
+    }
+
+    @Test
+    void detectaOtraAmbiguedadSintactica() {
+        ResultadoAnalisis resultado = casoUso.analizar("Juan vio al hombre con el telescopio.");
 
         assertTrue(resultado.isValida());
         assertTrue(resultado.isAmbiguo());

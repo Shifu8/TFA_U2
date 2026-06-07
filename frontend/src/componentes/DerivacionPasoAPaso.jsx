@@ -9,7 +9,10 @@ export default function DerivacionPasoAPaso({ derivacion = [] }) {
 
   return (
     <section className="panel">
-      <h2>Derivación por la izquierda</h2>
+      <h2>Derivación: por la izquierda</h2>
+      <p className="derivacion-razon">
+        Porque en cada paso se expande primero el no terminal más a la izquierda.
+      </p>
       <ol className="derivacion">
         {derivacion.map((paso, indice) => (
           <li key={`${paso}-${indice}`}>
@@ -21,4 +24,3 @@ export default function DerivacionPasoAPaso({ derivacion = [] }) {
     </section>
   );
 }
-

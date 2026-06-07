@@ -3,10 +3,10 @@
 Proyecto académico para validar si una oración en español cumple la estructura:
 
 ```text
-Sujeto + Verbo + Complemento
+Sujeto + Verbo (+ Complemento)
 ```
 
-El sistema realiza análisis léxico, análisis sintáctico, tabla token/lexema, derivación por la izquierda, árbol de derivación e identificación de sujeto, verbo y complemento. La validación se centra en la estructura gramatical, no en la coherencia semántica.
+El sistema realiza análisis léxico, análisis sintáctico, tabla token/lexema, derivación por la izquierda, árbol de derivación e identificación de sujeto, verbo y complemento opcional. La validación se centra en la estructura gramatical, no en la coherencia semántica.
 
 La visualización toma como referencia el flujo de análisis del repositorio `Shifu8/APE8_Automatas`: entrada, tabla de tokens, derivación y árbol sintáctico.
 
@@ -51,8 +51,8 @@ frontend/
 ```text
 S  -> SN SV
 SN -> ART SUST | PRON | SUST
-SV -> V C
-C  -> ADV | SN | PREP SN | SN PREP SN | PREP SN PREP SN
+SV -> V | V C
+C  -> ADV | SN | PREP SN | ADV C | SN C | PREP SN C
 ```
 
 ## Significado De Tokens
@@ -61,7 +61,7 @@ C  -> ADV | SN | PREP SN | SN PREP SN | PREP SN PREP SN
 | --- | --- | --- |
 | `S` | Símbolo inicial de la oración | `SN SV` |
 | `SN` | Sintagma nominal, funciona como sujeto o parte del complemento | `El perro`, `Juan`, `nosotros` |
-| `SV` | Sintagma verbal, contiene verbo y complemento | `corre rápido` |
+| `SV` | Sintagma verbal, contiene verbo y puede incluir complemento | `come`, `corre rápido` |
 | `ART` | Artículo | `el`, `la`, `un`, `una` |
 | `SUST` | Sustantivo | `perro`, `niña`, `arroz`, `parque` |
 | `PRON` | Pronombre | `yo`, `él`, `nosotros`, `ellos` |
@@ -224,6 +224,17 @@ El sistema marca esta oración como válida y ambigua porque `en el parque` pued
 1. El perro realizó la acción de morder estando en el parque.
 2. El hombre mordido estaba en el parque.
 
+Otro ejemplo:
+
+```text
+Juan vio al hombre con el telescopio.
+```
+
+La frase `con el telescopio` puede interpretarse de dos formas:
+
+1. Juan usó el telescopio para ver al hombre.
+2. El hombre observado tenía el telescopio.
+
 El frontend muestra una sección especial con dos interpretaciones estructurales y sus árboles.
 
 ## Integrantes Y Responsabilidades
@@ -235,4 +246,3 @@ El frontend muestra una sección especial con dos interpretaciones estructurales
 | Viviana | Interfaz React y visualización del árbol de derivación. |
 | Justin | Lexer, tabla de tokens y lexemas. |
 | Pardo | Pruebas, validaciones y documentación. |
-

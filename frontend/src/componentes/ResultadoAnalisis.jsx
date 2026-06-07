@@ -12,10 +12,12 @@ const ayudasError = {
   PALABRA_NO_RECONOCIDA:
     "La palabra no está dentro del vocabulario base del analizador.",
   FALTA_VERBO: "La oración tiene sujeto, pero no tiene verbo.",
-  FALTA_COMPLEMENTO: "La oración tiene sujeto y verbo, pero no tiene complemento.",
+  FALTA_COMPLEMENTO: "El complemento es opcional; revisa si quedó incompleto después del verbo.",
   FALTA_SUJETO: "La oración empieza con verbo o no presenta un sujeto válido.",
-  ORDEN_INCORRECTO: "La estructura esperada es sujeto, luego verbo y luego complemento.",
+  ORDEN_INCORRECTO: "La estructura esperada es sujeto, luego verbo y, si existe, complemento.",
   FALTA_SUSTANTIVO: "Después de un artículo debe aparecer un sustantivo.",
+  CONCORDANCIA_INVALIDA:
+    "El artículo y el sustantivo deben coincidir en género y número.",
 };
 
 export default function ResultadoAnalisis({ resultado, errorLocal }) {
@@ -62,7 +64,7 @@ export default function ResultadoAnalisis({ resultado, errorLocal }) {
           </div>
           <div>
             <span>Complemento</span>
-            <strong>{resultado.complemento}</strong>
+            <strong>{resultado.complemento || "Sin complemento"}</strong>
           </div>
         </div>
       )}
@@ -83,4 +85,3 @@ export default function ResultadoAnalisis({ resultado, errorLocal }) {
     </section>
   );
 }
-

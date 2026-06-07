@@ -7,6 +7,7 @@ package com.tfa.unidad2.aplicacion.casosuso;
 import com.tfa.unidad2.dominio.entidades.ErrorAnalisis;
 import com.tfa.unidad2.dominio.entidades.ResultadoAnalisis;
 import com.tfa.unidad2.dominio.entidades.TokenAnalisis;
+import com.tfa.unidad2.dominio.gramatica.Gramatica;
 import com.tfa.unidad2.dominio.servicios.DetectorAmbiguedad;
 import com.tfa.unidad2.dominio.servicios.Lexer;
 import com.tfa.unidad2.dominio.servicios.Parser;
@@ -22,7 +23,11 @@ public class AnalizarOracionUseCase implements PuertoAnalizarOracion {
     private final DetectorAmbiguedad detectorAmbiguedad;
 
     public AnalizarOracionUseCase() {
-        this(new Lexer(), new Parser(), new DetectorAmbiguedad());
+        this(new Gramatica());
+    }
+
+    private AnalizarOracionUseCase(Gramatica gramatica) {
+        this(new Lexer(gramatica), new Parser(gramatica), new DetectorAmbiguedad());
     }
 
     public AnalizarOracionUseCase(Lexer lexer, Parser parser, DetectorAmbiguedad detectorAmbiguedad) {

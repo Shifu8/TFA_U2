@@ -6,12 +6,15 @@ import { Search } from "lucide-react";
 
 const ejemplos = [
   { texto: "El perro corre rápido.", tipo: "valida", etiqueta: "Válida" },
+  { texto: "El perro come.", tipo: "valida", etiqueta: "Sin comp." },
   { texto: "La niña estudia matemáticas.", tipo: "valida", etiqueta: "Válida" },
   { texto: "Juan escribe una carta.", tipo: "valida", etiqueta: "Válida" },
+  { texto: "La perro come tranquilo.", tipo: "invalida", etiqueta: "Conc." },
   { texto: "El perro, corre rápido.", tipo: "invalida", etiqueta: "Coma" },
   { texto: "El perro corre 123.", tipo: "invalida", etiqueta: "Número" },
   { texto: "Corre perro el rápido.", tipo: "invalida", etiqueta: "Inválida" },
   { texto: "El perro mordió al hombre en el parque.", tipo: "ambigua", etiqueta: "Ambigua" },
+  { texto: "Juan vio al hombre con el telescopio.", tipo: "ambigua", etiqueta: "Ambigua" },
 ];
 
 export default function EntradaOracion({
@@ -25,7 +28,7 @@ export default function EntradaOracion({
       <div className="panel-titulo titulo-principal">
         <div>
           <h1>Procesamiento de Lenguaje Natural Básico</h1>
-          <p>Sujeto + Verbo + Complemento</p>
+          <p>Sujeto + Verbo (+ Complemento)</p>
         </div>
       </div>
 
@@ -65,4 +68,3 @@ export default function EntradaOracion({
     </section>
   );
 }
-
