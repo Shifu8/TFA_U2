@@ -393,6 +393,21 @@ button:disabled {
   color: #34d399;
 }
 
+.ambiguo {
+  border-color: rgba(251, 191, 36, 0.7);
+  background:
+    linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(255, 255, 255, 0.05)),
+    rgba(15, 23, 42, 0.62);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    0 0 0 1px rgba(251, 191, 36, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.ambiguo .estado svg {
+  color: #fbbf24;
+}
+
 .invalido {
   border-color: rgba(251, 113, 133, 0.55);
 }
@@ -429,6 +444,26 @@ button:disabled {
 .detalle-error strong {
   display: block;
   overflow-wrap: anywhere;
+}
+
+.aviso-ambiguedad {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.42);
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.13);
+  color: #fef3c7;
+  padding: 12px;
+}
+
+.aviso-ambiguedad strong,
+.aviso-ambiguedad span {
+  display: block;
+}
+
+.aviso-ambiguedad span {
+  line-height: 1.45;
 }
 
 .detalle-error {
