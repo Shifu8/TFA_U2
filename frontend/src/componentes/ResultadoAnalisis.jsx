@@ -4,6 +4,20 @@
 
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 
+const ayudasError = {
+  NUMERO_NO_PERMITIDO:
+    "Los números no forman parte de la gramática. Usa solo palabras del vocabulario permitido.",
+  SIGNO_NO_PERMITIDO:
+    "Las comas, paréntesis y símbolos internos se marcan como error. Solo se ignoran signos finales como punto, interrogación o exclamación.",
+  PALABRA_NO_RECONOCIDA:
+    "La palabra no está dentro del vocabulario base del analizador.",
+  FALTA_VERBO: "La oración tiene sujeto, pero no tiene verbo.",
+  FALTA_COMPLEMENTO: "La oración tiene sujeto y verbo, pero no tiene complemento.",
+  FALTA_SUJETO: "La oración empieza con verbo o no presenta un sujeto válido.",
+  ORDEN_INCORRECTO: "La estructura esperada es sujeto, luego verbo y luego complemento.",
+  FALTA_SUSTANTIVO: "Después de un artículo debe aparecer un sustantivo.",
+};
+
 export default function ResultadoAnalisis({ resultado, errorLocal }) {
   if (errorLocal) {
     return (
@@ -21,6 +35,8 @@ export default function ResultadoAnalisis({ resultado, errorLocal }) {
   }
 
   const Icono = resultado.valida ? CheckCircle2 : XCircle;
+  const codigoError = resultado.error?.codigo;
+  const ayuda = codigoError ? ayudasError[codigoError] : "";
 
   return (
     <section
@@ -52,12 +68,17 @@ export default function ResultadoAnalisis({ resultado, errorLocal }) {
       )}
 
       {!resultado.valida && resultado.error && (
-        <div className="detalle-error">
-          <span>Código</span>
-          <strong>{resultado.error.codigo}</strong>
-          <span>Token procesado</span>
-          <strong>{resultado.procesados_hasta}</strong>
-        </div>
+        <>
+          <div className="detalle-error">
+            <span>Código</span>
+            <strong>{resultado.error.codigo}</strong>
+            <span>Lexema</span>
+            <strong>{resultado.error.lexema || "No aplica"}</strong>
+            <span>Posición</span>
+            <strong>{resultado.procesados_hasta}</strong>
+          </div>
+          {ayuda && <p className="validacion-ayuda">{ayuda}</p>}
+        </>
       )}
     </section>
   );

@@ -30,6 +30,7 @@ public class Lexer {
         String texto = Normalizer.normalize(oracion, Normalizer.Form.NFC)
                 .strip()
                 .replaceAll("\\s+", " ");
+
         return texto
                 .replaceAll("^[\\s.!?¡¿]+", "")
                 .replaceAll("[\\s.!?¡¿]+$", "");
@@ -45,11 +46,16 @@ public class Lexer {
 
         String[] palabras = texto.split(" ");
         for (int posicion = 0; posicion < palabras.length; posicion++) {
-            String lexema = palabras[posicion].replaceAll("^[,;:!?¡¿\"'()\\[\\]{}]+|[,;:!?¡¿\"'()\\[\\]{}]+$", "");
-            tokens.add(new TokenAnalisis(lexema, gramatica.clasificar(lexema), posicion));
+            String lexema = palabras[posicion].strip();
+            String token = contieneCaracteresInvalidos(lexema) ? "ERROR" : gramatica.clasificar(lexema);
+            tokens.add(new TokenAnalisis(lexema, token, posicion));
         }
 
         return tokens;
+    }
+
+    private boolean contieneCaracteresInvalidos(String lexema) {
+        return lexema.matches(".*\\d.*") || !lexema.matches("\\p{L}+");
     }
 }
 

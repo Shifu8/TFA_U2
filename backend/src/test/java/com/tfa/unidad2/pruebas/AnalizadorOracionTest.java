@@ -55,6 +55,40 @@ class AnalizadorOracionTest {
     }
 
     @Test
+    void rechazaNumeros() {
+        ResultadoAnalisis resultado = casoUso.analizar("El perro corre 123.");
+
+        assertFalse(resultado.isValida());
+        assertEquals("NUMERO_NO_PERMITIDO", resultado.getError().getCodigo());
+        assertEquals("123", resultado.getError().getLexema());
+    }
+
+    @Test
+    void rechazaComasYSignosInternos() {
+        ResultadoAnalisis resultado = casoUso.analizar("El perro, corre rapido.");
+
+        assertFalse(resultado.isValida());
+        assertEquals("SIGNO_NO_PERMITIDO", resultado.getError().getCodigo());
+        assertEquals("perro,", resultado.getError().getLexema());
+    }
+
+    @Test
+    void rechazaSimbolosEspeciales() {
+        ResultadoAnalisis resultado = casoUso.analizar("Juan escribe una carta#.");
+
+        assertFalse(resultado.isValida());
+        assertEquals("SIGNO_NO_PERMITIDO", resultado.getError().getCodigo());
+    }
+
+    @Test
+    void aceptaSignosFinalesPermitidos() {
+        ResultadoAnalisis resultado = casoUso.analizar("¿El perro corre rapido?");
+
+        assertTrue(resultado.isValida());
+        assertEquals("El perro", resultado.getSujeto());
+    }
+
+    @Test
     void generaTablaTokens() {
         ResultadoAnalisis resultado = casoUso.analizar("El perro corre rapido.");
 
@@ -111,4 +145,3 @@ class AnalizadorOracionTest {
         );
     }
 }
-

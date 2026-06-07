@@ -37,7 +37,7 @@ public class AnalizarOracionUseCase implements PuertoAnalizarOracion {
         if (oracionLimpia.isBlank()) {
             ResultadoAnalisis resultado = new ResultadoAnalisis();
             resultado.setValida(false);
-            resultado.setMensaje("La oracion no puede estar vacia.");
+            resultado.setMensaje("La oración no puede estar vacía.");
             resultado.setError(new ErrorAnalisis("ORACION_VACIA", 0));
             resultado.setProcesadosHasta(0);
             return resultado;
@@ -57,4 +57,3 @@ public class AnalizarOracionUseCase implements PuertoAnalizarOracion {
         return resultado;
     }
 }
-

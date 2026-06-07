@@ -2,14 +2,16 @@
 // Descripción: Permite escribir y enviar una oración para análisis.
 // Responsable: Viviana
 
-import { Search, Wand2 } from "lucide-react";
+import { Search } from "lucide-react";
 
 const ejemplos = [
-  "El perro corre rápido.",
-  "La niña estudia matemáticas.",
-  "Juan escribe una carta.",
-  "Corre perro el rápido.",
-  "El perro mordió al hombre en el parque.",
+  { texto: "El perro corre rápido.", tipo: "valida", etiqueta: "Válida" },
+  { texto: "La niña estudia matemáticas.", tipo: "valida", etiqueta: "Válida" },
+  { texto: "Juan escribe una carta.", tipo: "valida", etiqueta: "Válida" },
+  { texto: "El perro, corre rápido.", tipo: "invalida", etiqueta: "Coma" },
+  { texto: "El perro corre 123.", tipo: "invalida", etiqueta: "Número" },
+  { texto: "Corre perro el rápido.", tipo: "invalida", etiqueta: "Inválida" },
+  { texto: "El perro mordió al hombre en el parque.", tipo: "ambigua", etiqueta: "Ambigua" },
 ];
 
 export default function EntradaOracion({
@@ -20,8 +22,7 @@ export default function EntradaOracion({
 }) {
   return (
     <section className="panel entrada-panel">
-      <div className="panel-titulo">
-        <Wand2 size={22} aria-hidden="true" />
+      <div className="panel-titulo titulo-principal">
         <div>
           <h1>Procesamiento de Lenguaje Natural Básico</h1>
           <p>Sujeto + Verbo + Complemento</p>
@@ -46,15 +47,18 @@ export default function EntradaOracion({
         </div>
       </form>
 
+      <div className="sugerencias-titulo">Sugerencias rápidas</div>
       <div className="ejemplos" aria-label="Ejemplos de oraciones">
         {ejemplos.map((ejemplo) => (
           <button
             type="button"
-            key={ejemplo}
-            onClick={() => setOracion(ejemplo)}
-            title={`Usar: ${ejemplo}`}
+            className={`ejemplo ${ejemplo.tipo}`}
+            key={ejemplo.texto}
+            onClick={() => setOracion(ejemplo.texto)}
+            title={`Usar: ${ejemplo.texto}`}
           >
-            {ejemplo}
+            <span className="ejemplo-etiqueta">{ejemplo.etiqueta}</span>
+            <span className="ejemplo-texto">{ejemplo.texto}</span>
           </button>
         ))}
       </div>

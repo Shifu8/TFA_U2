@@ -19,17 +19,18 @@ public class DetectorAmbiguedad {
         }
 
         return new AmbiguedadSintactica(
-                "La oracion presenta ambiguedad sintactica porque \"en el parque\" "
-                        + "puede modificar la accion de morder o al sintagma nominal hombre.",
+                "La oración es ambigua porque la frase \"en el parque\" puede pegarse a dos partes distintas: "
+                        + "a la acción de morder o al hombre mordido. El sistema no decide el significado; "
+                        + "solo muestra las dos estructuras posibles.",
                 List.of(
                         new InterpretacionAmbiguedad(
-                                "El perro mordio estando en el parque",
-                                "El complemento \"en el parque\" funciona como lugar de la accion.",
+                                "Interpretación 1: la mordida ocurrió en el parque",
+                                "Aquí \"en el parque\" indica el lugar donde el perro realizó la acción de morder.",
                                 arbolLugarAccion()
                         ),
                         new InterpretacionAmbiguedad(
-                                "El hombre estaba en el parque",
-                                "El complemento \"en el parque\" modifica al hombre mordido.",
+                                "Interpretación 2: el hombre estaba en el parque",
+                                "Aquí \"en el parque\" describe al hombre: el hombre mordido era el que estaba en ese lugar.",
                                 arbolModificaHombre()
                         )
                 )
@@ -45,7 +46,7 @@ public class DetectorAmbiguedad {
                                 new NodoArbol("PREP: al"),
                                 new NodoArbol("SN", List.of(new NodoArbol("SUST: hombre")))
                         )),
-                        new NodoArbol("CC", List.of(
+                        new NodoArbol("C: lugar de la acción", List.of(
                                 new NodoArbol("PREP: en"),
                                 new NodoArbol("SN", List.of(
                                         new NodoArbol("ART: el"),
@@ -65,7 +66,7 @@ public class DetectorAmbiguedad {
                                 new NodoArbol("PREP: al"),
                                 new NodoArbol("SN", List.of(
                                         new NodoArbol("SUST: hombre"),
-                                        new NodoArbol("PP", List.of(
+                                        new NodoArbol("PP: lugar del hombre", List.of(
                                                 new NodoArbol("PREP: en"),
                                                 new NodoArbol("SN", List.of(
                                                         new NodoArbol("ART: el"),
@@ -78,4 +79,3 @@ public class DetectorAmbiguedad {
         ));
     }
 }
-

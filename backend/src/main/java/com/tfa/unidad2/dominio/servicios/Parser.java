@@ -31,13 +31,14 @@ public class Parser {
 
         for (TokenAnalisis token : tokens) {
             if ("ERROR".equals(token.token())) {
+                String codigo = codigoErrorLexico(token.lexema());
                 ResultadoAnalisis resultado = baseInvalida(
-                        "Palabra no reconocida: \"" + token.lexema() + "\".",
-                        "PALABRA_NO_RECONOCIDA",
+                        mensajeErrorLexico(token.lexema(), codigo),
+                        codigo,
                         token.posicion()
                 );
                 resultado.setTokens(tokens);
-                resultado.setError(new ErrorAnalisis("PALABRA_NO_RECONOCIDA", token.posicion(), token.lexema()));
+                resultado.setError(new ErrorAnalisis(codigo, token.posicion(), token.lexema()));
                 resultado.setProcesadosHasta(token.posicion());
                 return resultado;
             }
@@ -84,7 +85,7 @@ public class Parser {
 
             ResultadoAnalisis resultado = new ResultadoAnalisis();
             resultado.setValida(true);
-            resultado.setMensaje("Oracion valida");
+            resultado.setMensaje("Oración válida");
             resultado.setSujeto(unirLexemas(sujeto.tokens()));
             resultado.setVerbo(verbo.lexema());
             resultado.setComplemento(unirLexemas(complemento.tokens()));
@@ -217,6 +218,26 @@ public class Parser {
         return new ArrayList<>(pasos);
     }
 
+    private String codigoErrorLexico(String lexema) {
+        if (lexema.matches(".*\\d.*")) {
+            return "NUMERO_NO_PERMITIDO";
+        }
+        if (!lexema.matches("\\p{L}+")) {
+            return "SIGNO_NO_PERMITIDO";
+        }
+        return "PALABRA_NO_RECONOCIDA";
+    }
+
+    private String mensajeErrorLexico(String lexema, String codigo) {
+        if ("NUMERO_NO_PERMITIDO".equals(codigo)) {
+            return "No se permiten números en la oración: \"" + lexema + "\".";
+        }
+        if ("SIGNO_NO_PERMITIDO".equals(codigo)) {
+            return "Solo se permite punto, signo de pregunta o exclamación al final. Revisa: \"" + lexema + "\".";
+        }
+        return "Palabra no reconocida: \"" + lexema + "\".";
+    }
+
     private ResultadoAnalisis baseInvalida(String mensaje, String codigo, int posicionError) {
         ResultadoAnalisis resultado = new ResultadoAnalisis();
         resultado.setValida(false);
@@ -257,4 +278,3 @@ public class Parser {
         return tokens.stream().map(TokenAnalisis::lexema).reduce((a, b) -> a + " " + b).orElse("");
     }
 }
-
