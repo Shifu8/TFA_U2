@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Archivo: pom.xml
+    Descripcion: Configura dependencias y generadores Maven para Spring Boot, JFlex y CUP.
+    Responsable: Brandon
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -19,12 +24,19 @@
 
     <properties>
         <java.version>21</java.version>
+        <jflex.version>1.9.1</jflex.version>
+        <cup.version>11b-20160615-3</cup.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.vbmacher</groupId>
+            <artifactId>java-cup-runtime</artifactId>
+            <version>${cup.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,10 +48,51 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>com.github.vbmacher</groupId>
+                <artifactId>cup-maven-plugin</artifactId>
+                <version>${cup.version}</version>
+                <executions>
+                    <execution>
+                        <id>generar-parser-cup</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <cupDefinition>src/main/cup/ParserCup.cup</cupDefinition>
+                            <packageName>com.tfa.unidad2.dominio.generado</packageName>
+                            <className>ParserCup</className>
+                            <symbolsName>TokensCup</symbolsName>
+                            <symbolsInterface>false</symbolsInterface>
+                            <locations>false</locations>
+                            <noSummary>true</noSummary>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <version>${jflex.version}</version>
+                <executions>
+                    <execution>
+                        <id>generar-lexer-jflex</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <lexDefinitions>
+                                <lexDefinition>src/main/jflex/LexerCup.flex</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
 </project>
-

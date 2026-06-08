@@ -1,0 +1,80 @@
+/* Archivo: ParserCup.cup
+ * Descripcion: Especificacion CUP de la gramatica libre de contexto del analizador.
+ * Responsable: Santiago
+ */
+
+import com.tfa.unidad2.dominio.entidades.ResultadoAnalisis;
+import com.tfa.unidad2.dominio.entidades.TokenAnalisis;
+import com.tfa.unidad2.dominio.gramatica.Gramatica;
+import com.tfa.unidad2.dominio.servicios.ConstructorResultadoCup;
+import com.tfa.unidad2.dominio.servicios.FragmentoSintactico;
+import com.tfa.unidad2.dominio.servicios.SintagmaVerbalCup;
+import java_cup.runtime.Symbol;
+import java.util.List;
+
+parser code {:
+    private Gramatica gramatica = new Gramatica();
+    private List<TokenAnalisis> tokens = List.of();
+
+    public void configurar(Gramatica gramatica, List<TokenAnalisis> tokens) {
+        this.gramatica = gramatica;
+        this.tokens = List.copyOf(tokens);
+    }
+
+    @Override
+    public void syntax_error(Symbol simbolo) {
+        throw ConstructorResultadoCup.errorSintactico(tokens, simbolo);
+    }
+
+    @Override
+    public void unrecovered_syntax_error(Symbol simbolo) throws java.lang.Exception {
+        syntax_error(simbolo);
+    }
+:};
+
+terminal TokenAnalisis ART, PRON, SUST, V, PREP, ADV, ERROR;
+
+non terminal ResultadoAnalisis oracion;
+non terminal FragmentoSintactico sn, complemento, unidad_complemento;
+non terminal SintagmaVerbalCup sv;
+
+start with oracion;
+
+oracion ::=
+        sn:s sv:v
+        {: RESULT = ConstructorResultadoCup.resultadoValido(s, v, tokens); :}
+    |   ERROR:e
+        {: RESULT = ConstructorResultadoCup.errorLexicoComoSintactico(e); :}
+        ;
+
+sn ::=
+        ART:a SUST:s
+        {: RESULT = ConstructorResultadoCup.snArticuloSustantivo(a, s, gramatica); :}
+    |   PRON:p
+        {: RESULT = ConstructorResultadoCup.snSimple(p); :}
+    |   SUST:s
+        {: RESULT = ConstructorResultadoCup.snSimple(s); :}
+        ;
+
+sv ::=
+        V:v
+        {: RESULT = ConstructorResultadoCup.svSoloVerbo(v); :}
+    |   V:v complemento:c
+        {: RESULT = ConstructorResultadoCup.svConComplemento(v, c); :}
+        ;
+
+complemento ::=
+        unidad_complemento:u
+        {: RESULT = ConstructorResultadoCup.complementoDeUnidad(u); :}
+    |   unidad_complemento:u complemento:c
+        {: RESULT = ConstructorResultadoCup.complementoSecuencia(u, c); :}
+        ;
+
+unidad_complemento ::=
+        ADV:a
+        {: RESULT = ConstructorResultadoCup.unidadAdverbio(a); :}
+    |   sn:s
+        {: RESULT = s; :}
+    |   PREP:p sn:s
+        {: RESULT = ConstructorResultadoCup.unidadPreposicional(p, s); :}
+        ;

@@ -1,27 +1,112 @@
-# Procesamiento de Lenguaje Natural Básico
+<!--
+Archivo: README.md
+Descripcion: Documenta el flujo JFlex/CUP, arquitectura, comandos y responsabilidades del proyecto.
+Responsable: Pardo
+-->
 
-Proyecto académico para validar si una oración en español cumple la estructura:
+# Procesamiento de Lenguaje Natural Basico
+
+Proyecto academico para validar oraciones simples en espanol con una Gramatica Libre de Contexto. El sistema realiza analisis lexico, analisis sintactico, tabla token/lexema, derivacion por la izquierda, arbol de derivacion, deteccion de errores y analisis de ambiguedad.
+
+La version actual usa **JFlex** para generar el analizador lexico y **CUP** para generar el parser sintactico.
+
+## Flujo Principal
 
 ```text
-Sujeto + Verbo (+ Complemento)
+Oracion del usuario
+  -> NormalizadorOracion
+  -> LexerCup generado con JFlex
+  -> ParserCup generado con CUP
+  -> ResultadoAnalisis
+  -> DetectorAmbiguedad
+  -> API REST
+  -> Frontend React
 ```
 
-El sistema realiza análisis léxico, análisis sintáctico, tabla token/lexema, derivación por la izquierda, árbol de derivación e identificación de sujeto, verbo y complemento opcional. La validación se centra en la estructura gramatical, no en la coherencia semántica.
+El frontend no necesita cambios especiales porque sigue consumiendo el endpoint:
 
-La visualización toma como referencia el flujo de análisis del repositorio `Shifu8/APE8_Automatas`: entrada, tabla de tokens, derivación y árbol sintáctico.
+```text
+POST /api/analizar
+```
 
-## Escenario
+## Gramatica Libre de Contexto
 
-Un chatbot necesita validar oraciones simples en español antes de procesarlas. Para ello, este proyecto implementa una Gramática Libre de Contexto que reconoce sintagmas nominales, verbos y complementos, y entrega una explicación clara cuando una oración es inválida.
+```text
+S  -> SN SV
+SN -> ART SUST
+SN -> PRON
+SN -> SUST
+SV -> V
+SV -> V C
+C  -> ADV
+C  -> SN
+C  -> PREP SN
+C  -> ADV C
+C  -> SN C
+C  -> PREP SN C
+```
 
-## Arquitectura Hexagonal
+## Tokens
+
+| Token | Significado | Ejemplos |
+| --- | --- | --- |
+| `ART` | Articulo | `el`, `la`, `los`, `una` |
+| `PRON` | Pronombre | `yo`, `tu`, `ella`, `nosotros` |
+| `SUST` | Sustantivo | `perro`, `Juan`, `carta`, `parque` |
+| `V` | Verbo | `corre`, `come`, `escribe`, `mordio` |
+| `PREP` | Preposicion | `a`, `al`, `con`, `en`, `para` |
+| `ADV` | Adverbio | `rapido`, `tranquilo`, `lentamente` |
+| `ERROR` | Lexema invalido o no reconocido | `123`, `perro,`, `carta#` |
+
+## Integracion JFlex y CUP
+
+Los archivos editables del analizador generado son:
+
+```text
+backend/src/main/jflex/LexerCup.flex
+backend/src/main/cup/ParserCup.cup
+```
+
+Maven genera automaticamente estas clases durante `generate-sources`:
+
+```text
+backend/target/generated-sources/jflex/.../LexerCup.java
+backend/target/generated-sources/cup/.../ParserCup.java
+backend/target/generated-sources/cup/.../TokensCup.java
+```
+
+No se deben editar manualmente los archivos dentro de `target/`, porque se regeneran al compilar.
+
+## Arquitectura
 
 | Capa | Responsabilidad |
 | --- | --- |
-| Dominio | Gramática, reglas, lexer, parser, árbol, resultado y detector de ambigüedad. |
-| Aplicación | Caso de uso `AnalizarOracionUseCase`. |
+| Dominio | Gramatica, entidades, JFlex/CUP, derivacion, arbol y ambiguedad. |
+| Aplicacion | Caso de uso `AnalizarOracionUseCase`. |
 | Puertos | Interfaces de entrada y salida. |
 | Adaptadores | API REST Spring Boot y exportador JSON. |
+| Frontend | Interfaz React para entrada, tokens, resultado, derivacion, arbol y ambiguedad. |
+
+## Archivos Principales
+
+| Archivo | Descripcion | Responsable |
+| --- | --- | --- |
+| `backend/pom.xml` | Configura Spring Boot, JFlex, CUP y pruebas. | Brandon |
+| `backend/src/main/jflex/LexerCup.flex` | Especificacion JFlex del analizador lexico. | Justin |
+| `backend/src/main/cup/ParserCup.cup` | Especificacion CUP de la gramatica sintactica. | Santiago |
+| `AnalizadorJFlexCup.java` | Conecta el lexer de JFlex con el parser de CUP. | Brandon |
+| `ConstructorResultadoCup.java` | Construye resultado, derivacion, arbol y errores desde CUP. | Brandon |
+| `NormalizadorOracion.java` | Limpia espacios y signos externos antes del analisis. | Justin |
+| `FragmentoSintactico.java` | Transporta subarboles y patrones de las reducciones CUP. | Viviana |
+| `SintagmaVerbalCup.java` | Agrupa verbo y complemento reducidos por CUP. | Santiago |
+| `Gramatica.java` | Carga vocabulario y valida concordancia articulo/sustantivo. | Santiago |
+| `lexemas.json` | Define vocabulario base del analizador. | Justin |
+| `DetectorAmbiguedad.java` | Detecta y explica casos de ambiguedad sintactica. | Santiago |
+| `AnalizadorOracionTest.java` | Prueba oraciones validas, invalidas, errores, arbol y ambiguedad. | Pardo |
+| `frontend/src/componentes/*.jsx` | Muestra entrada, tokens, resultado, derivacion, arbol y ambiguedad. | Viviana |
+| `frontend/src/servicios/analisisServicio.js` | Conecta React con la API REST. | Brandon |
+
+Cada archivo Java nuevo incluye cabecera con nombre, descripcion y responsable.
 
 ## Estructura
 
@@ -30,12 +115,16 @@ backend/
 ├── pom.xml
 └── src/
     ├── main/
+    │   ├── cup/ParserCup.cup
+    │   ├── jflex/LexerCup.flex
     │   ├── java/com/tfa/unidad2/
-    │   │   ├── dominio/
+    │   │   ├── adaptadores/
     │   │   ├── aplicacion/
-    │   │   ├── puertos/
-    │   │   └── adaptadores/
-    │   └── resources/application.properties
+    │   │   ├── dominio/
+    │   │   └── puertos/
+    │   └── resources/
+    │       ├── application.properties
+    │       └── lexemas.json
     └── test/java/com/tfa/unidad2/pruebas/
 
 frontend/
@@ -46,77 +135,16 @@ frontend/
     └── styles.css
 ```
 
-## Gramática Libre de Contexto
+## Comandos
 
-```text
-S  -> SN SV
-SN -> ART SUST | PRON | SUST
-SV -> V | V C
-C  -> ADV | SN | PREP SN | ADV C | SN C | PREP SN C
-```
-
-## Significado De Tokens
-
-| Token | Significado | Ejemplos |
-| --- | --- | --- |
-| `S` | Símbolo inicial de la oración | `SN SV` |
-| `SN` | Sintagma nominal, funciona como sujeto o parte del complemento | `El perro`, `Juan`, `nosotros` |
-| `SV` | Sintagma verbal, contiene verbo y puede incluir complemento | `come`, `corre rápido` |
-| `ART` | Artículo | `el`, `la`, `un`, `una` |
-| `SUST` | Sustantivo | `perro`, `niña`, `arroz`, `parque` |
-| `PRON` | Pronombre | `yo`, `él`, `nosotros`, `ellos` |
-| `V` | Verbo | `corre`, `come`, `escribe`, `mordió` |
-| `PREP` | Preposición | `en`, `al`, `con`, `de`, `para` |
-| `ADV` | Adverbio | `rápido`, `tranquilo`, `lentamente` |
-| `C` | Complemento del verbo | `rápido`, `una carta`, `al hombre` |
-
-## Derivación Por La Izquierda
-
-El sistema usa derivación por la izquierda, es decir, en cada paso expande el primer no terminal que aparece más a la izquierda.
-
-Ejemplo:
-
-```text
-S
-SN SV
-ART SUST SV
-ART SUST V C
-ART SUST V ADV
-```
-
-Para una oración con complemento preposicional doble:
-
-```text
-S
-SN SV
-ART SUST SV
-ART SUST V C
-ART SUST V PREP SN PREP SN
-ART SUST V PREP SUST PREP SN
-ART SUST V PREP SUST PREP ART SUST
-```
-
-## Tecnologías
-
-| Parte | Tecnología |
-| --- | --- |
-| Backend | Java 21+, Spring Boot, Maven |
-| Frontend | React, Vite, Lucide React |
-| Comunicación | API REST |
-| Pruebas | JUnit 5 |
-
-## Comandos Para VS Code
-
-Abre dos terminales en la raíz del proyecto.
-
-Terminal 1, backend:
+Backend:
 
 ```powershell
 cd backend
 mvn spring-boot:run
 ```
 
-Terminal 2, frontend:
+Frontend:
 
 ```powershell
 cd frontend
@@ -131,13 +159,7 @@ Backend:  http://localhost:5000
 Frontend: http://localhost:5173
 ```
 
-Endpoint principal:
-
-```text
-POST /api/analizar
-```
-
-## Ejecutar Pruebas
+## Pruebas
 
 Backend:
 
@@ -153,28 +175,28 @@ cd frontend
 npm run build
 ```
 
-## Ejemplo De Entrada
+## Ejemplo de Entrada
 
 ```json
 {
-  "oracion": "El perro corre rápido"
+  "oracion": "El perro corre rapido"
 }
 ```
 
-## Ejemplo De Salida
+## Ejemplo de Salida
 
 ```json
 {
   "valida": true,
-  "mensaje": "Oración válida",
+  "mensaje": "Oracion valida",
   "sujeto": "El perro",
   "verbo": "corre",
-  "complemento": "rápido",
+  "complemento": "rapido",
   "tokens": [
     { "lexema": "El", "token": "ART" },
     { "lexema": "perro", "token": "SUST" },
     { "lexema": "corre", "token": "V" },
-    { "lexema": "rápido", "token": "ADV" }
+    { "lexema": "rapido", "token": "ADV" }
   ],
   "derivacion": [
     "S",
@@ -186,63 +208,33 @@ npm run build
 }
 ```
 
-## Oraciones Válidas
+## Oraciones Validar
 
-| # | Oración |
+| Validas | Invalidas |
 | --- | --- |
-| 1 | El perro corre rápido. |
-| 2 | La niña estudia matemáticas. |
-| 3 | María come arroz. |
-| 4 | El estudiante lee libros. |
-| 5 | Nosotros jugamos fútbol. |
-| 6 | Juan escribe una carta. |
-| 7 | La profesora explica la clase. |
-| 8 | El gato duerme tranquilo. |
-| 9 | Pedro compra pan. |
-| 10 | Ellos miran televisión. |
+| `El perro corre rapido.` | `Corre perro el rapido.` |
+| `Juan escribe una carta.` | `El estudiante.` |
+| `La profesora explica la clase.` | `La come arroz.` |
+| `El perro mordio al hombre en el parque.` | `Perro el corre.` |
+| `Juan vio al hombre con el telescopio.` | `Juan una carta escribe.` |
 
-## Oraciones Inválidas
+## Ambiguedad Sintactica
 
-| # | Oración | Motivo esperado |
-| --- | --- | --- |
-| 1 | Corre perro el rápido. | Falta sujeto antes del verbo. |
-| 2 | El estudiante. | Falta verbo. |
-| 3 | La come arroz. | Falta sustantivo después del artículo. |
-| 4 | Perro el corre. | Orden incorrecto. |
-| 5 | Juan una carta escribe. | Orden incorrecto. |
-
-## Ambigüedad Sintáctica
-
-Oración:
+El sistema marca como validas y ambiguas estas oraciones:
 
 ```text
-El perro mordió al hombre en el parque.
-```
-
-El sistema marca esta oración como válida y ambigua porque `en el parque` puede interpretarse de dos formas:
-
-1. El perro realizó la acción de morder estando en el parque.
-2. El hombre mordido estaba en el parque.
-
-Otro ejemplo:
-
-```text
+El perro mordio al hombre en el parque.
 Juan vio al hombre con el telescopio.
 ```
 
-La frase `con el telescopio` puede interpretarse de dos formas:
+La ambiguedad se analiza despues de CUP, usando la tabla de tokens ya generada por JFlex.
 
-1. Juan usó el telescopio para ver al hombre.
-2. El hombre observado tenía el telescopio.
-
-El frontend muestra una sección especial con dos interpretaciones estructurales y sus árboles.
-
-## Integrantes Y Responsabilidades
+## Integrantes
 
 | Integrante | Responsabilidad |
 | --- | --- |
-| Brandon | Integración general, parser y conexión frontend-backend. |
-| Santiago | Gramática Libre de Contexto, reglas de producción y ambigüedad. |
-| Viviana | Interfaz React y visualización del árbol de derivación. |
-| Justin | Lexer, tabla de tokens y lexemas. |
-| Pardo | Pruebas, validaciones y documentación. |
+| Brandon | Integracion general, caso de uso, conexion JFlex/CUP y API. |
+| Santiago | Gramatica Libre de Contexto, reglas CUP y ambiguedad. |
+| Viviana | Interfaz React, visualizacion de arbol y estructuras visuales. |
+| Justin | Analizador lexico JFlex, normalizacion y vocabulario. |
+| Pardo | Pruebas, validaciones y documentacion. |
