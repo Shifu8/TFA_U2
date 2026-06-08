@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Resumen de Integracion JFlex y CUP</title>
+  <style>
+    @page {
+      margin: 20mm;
+    }
+
+    body {
+      color: #1f2933;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    h1 {
+      border-bottom: 2px solid #1f4f82;
+      color: #1f4f82;
+      font-size: 23px;
+      margin: 0 0 6px;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      color: #1f4f82;
+      font-size: 16px;
+      margin: 22px 0 8px;
+    }
+
+    h3 {
+      color: #2f3f52;
+      font-size: 13px;
+      margin: 14px 0 4px;
+    }
+
+    p {
+      margin: 6px 0;
+    }
+
+    ul,
+    ol {
+      margin: 6px 0 8px 20px;
+      padding: 0;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    code {
+      background: #eef2f7;
+      border-radius: 3px;
+      color: #172033;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      padding: 1px 4px;
+    }
+
+    pre {
+      background: #eef2f7;
+      border-left: 4px solid #1f4f82;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      margin: 8px 0;
+      padding: 8px 10px;
+      white-space: pre-wrap;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 8px 0 12px;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e8f0fa;
+      color: #1f4f82;
+      font-weight: 700;
+    }
+
+    .meta {
+      color: #52616f;
+      font-size: 11px;
+      margin-bottom: 18px;
+    }
+
+    .box {
+      background: #f7fafc;
+      border: 1px solid #d7dee8;
+      border-radius: 6px;
+      margin: 10px 0;
+      padding: 9px 11px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resumen Tecnico de la Integracion con JFlex y CUP</h1>
+  <p class="meta">Proyecto: Procesamiento de Lenguaje Natural Basico | Unidad 2</p>
+
+  <h2>1. Objetivo del Cambio</h2>
+  <p>
+    Se actualizo el backend del proyecto para reemplazar el analizador lexico y el parser escritos manualmente
+    por analizadores generados formalmente con <strong>JFlex</strong> y <strong>CUP</strong>. Con este cambio,
+    el programa mantiene el mismo funcionamiento visual y la misma API REST, pero el proceso interno de analisis
+    queda basado en herramientas propias de compiladores y teoria de lenguajes.
+  </p>
+
+  <div class="box">
+    <strong>Flujo actual:</strong>
+    <pre>Oracion del usuario
+  -> NormalizadorOracion
+  -> LexerCup generado por JFlex
+  -> ParserCup generado por CUP
+  -> ResultadoAnalisis
+  -> DetectorAmbiguedad
+  -> API REST
+  -> Frontend React</pre>
+  </div>
+
+  <h2>2. Cambios Realizados</h2>
+  <ol>
+    <li>
+      Se configuro Maven para generar automaticamente las clases necesarias de JFlex y CUP durante la fase
+      <code>generate-sources</code>.
+    </li>
+    <li>
+      Se creo el archivo <code>LexerCup.flex</code>, donde se define el analizador lexico con JFlex.
+    </li>
+    <li>
+      Se creo el archivo <code>ParserCup.cup</code>, donde se define la gramatica libre de contexto con CUP.
+    </li>
+    <li>
+      Se agrego <code>AnalizadorJFlexCup.java</code> para conectar el lexer generado con el parser generado.
+    </li>
+    <li>
+      Se agrego <code>ConstructorResultadoCup.java</code> para construir el resultado final que consume el frontend.
+    </li>
+    <li>
+      Se actualizo <code>AnalizarOracionUseCase.java</code> para usar el nuevo analizador con JFlex y CUP.
+    </li>
+    <li>
+      Se mantuvo el detector de ambiguedad, porque esa funcionalidad trabaja despues de validar la oracion.
+    </li>
+    <li>
+      Se eliminaron las clases manuales <code>Lexer.java</code>, <code>Parser.java</code> y
+      <code>Fragmento.java</code>, ya que fueron reemplazadas por la nueva integracion.
+    </li>
+    <li>
+      Se actualizo la documentacion del proyecto en el <code>README.md</code>.
+    </li>
+    <li>
+      Se ajusto el comando del frontend para que Vite muestre un solo enlace local.
+    </li>
+  </ol>
+
+  <h2>3. Ubicacion de los Archivos Principales</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Archivo</th>
+        <th>Funcion</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>backend/pom.xml</code></td>
+        <td>Configura Spring Boot, Java, JFlex, CUP y los plugins de generacion.</td>
+      </tr>
+      <tr>
+        <td><code>backend/src/main/jflex/LexerCup.flex</code></td>
+        <td>Define el analizador lexico. Reconoce palabras y las convierte en tokens.</td>
+      </tr>
+      <tr>
+        <td><code>backend/src/main/cup/ParserCup.cup</code></td>
+        <td>Define el parser sintactico y la gramatica libre de contexto.</td>
+      </tr>
+      <tr>
+        <td><code>backend/src/main/java/com/tfa/unidad2/dominio/servicios/AnalizadorJFlexCup.java</code></td>
+        <td>Orquesta el proceso completo: limpiar texto, tokenizar con JFlex, parsear con CUP y devolver el resultado.</td>
+      </tr>
+      <tr>
+        <td><code>ConstructorResultadoCup.java</code></td>
+        <td>Construye tokens, sujeto, verbo, complemento, derivacion, arbol y errores.</td>
+      </tr>
+      <tr>
+        <td><code>NormalizadorOracion.java</code></td>
+        <td>Limpia espacios y signos externos antes del analisis.</td>
+      </tr>
+      <tr>
+        <td><code>FragmentoSintactico.java</code></td>
+        <td>Transporta subarboles, tokens y patrones reducidos por CUP.</td>
+      </tr>
+      <tr>
+        <td><code>SintagmaVerbalCup.java</code></td>
+        <td>Agrupa el verbo y el complemento reducidos por el parser.</td>
+      </tr>
+      <tr>
+        <td><code>AnalizarOracionUseCase.java</code></td>
+        <td>Ejecuta el caso de uso principal y conserva la deteccion de ambiguedad.</td>
+      </tr>
+      <tr>
+        <td><code>DetectorAmbiguedad.java</code></td>
+        <td>Detecta casos ambiguos ya conocidos y genera explicaciones con arboles alternativos.</td>
+      </tr>
+      <tr>
+        <td><code>backend/src/test/java/.../AnalizadorOracionTest.java</code></td>
+        <td>Valida oraciones correctas, incorrectas, errores lexicos, derivacion, arbol y ambiguedad.</td>
+      </tr>
+      <tr>
+        <td><code>README.md</code></td>
+        <td>Documenta el flujo, la gramatica, los tokens, comandos y responsabilidades.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>4. Funcionamiento del Analizador Lexico</h2>
+  <p>
+    El archivo <code>LexerCup.flex</code> define el analizador lexico. Este recibe la oracion limpia y separa
+    cada fragmento de texto. Luego consulta la gramatica del proyecto para clasificar cada lexema.
+  </p>
+  <p>Los tokens reconocidos son:</p>
+  <pre>ART   -> articulos
+PRON  -> pronombres
+SUST  -> sustantivos
+V     -> verbos
+PREP  -> preposiciones
+ADV   -> adverbios
+ERROR -> lexemas no permitidos o no reconocidos</pre>
+  <p>Ejemplo:</p>
+  <pre>El perro corre rapido
+
+El      -> ART
+perro   -> SUST
+corre   -> V
+rapido  -> ADV</pre>
+
+  <h2>5. Funcionamiento del Parser Sintactico</h2>
+  <p>
+    El archivo <code>ParserCup.cup</code> contiene la gramatica libre de contexto que valida la estructura de
+    las oraciones. CUP toma los tokens producidos por JFlex y verifica si pueden formar una oracion valida.
+  </p>
+  <pre>S  -> SN SV
+SN -> ART SUST
+SN -> PRON
+SN -> SUST
+SV -> V
+SV -> V C
+C  -> ADV
+C  -> SN
+C  -> PREP SN
+C  -> ADV C
+C  -> SN C
+C  -> PREP SN C</pre>
+
+  <h2>6. Resultado que se Devuelve al Frontend</h2>
+  <p>
+    La interfaz React no se cambio en su estructura principal, porque el backend sigue devolviendo el mismo tipo
+    de respuesta JSON. El resultado incluye:
+  </p>
+  <ul>
+    <li>Si la oracion es valida o invalida.</li>
+    <li>Mensaje de estado o error.</li>
+    <li>Sujeto identificado.</li>
+    <li>Verbo identificado.</li>
+    <li>Complemento, si existe.</li>
+    <li>Tabla de tokens y lexemas.</li>
+    <li>Derivacion por la izquierda.</li>
+    <li>Arbol sintactico.</li>
+    <li>Informacion de ambiguedad cuando aplica.</li>
+  </ul>
+
+  <h2>7. Manejo de Errores</h2>
+  <p>
+    El sistema conserva mensajes claros para el usuario. Los errores lexicos se detectan cuando aparece un numero,
+    un simbolo no permitido o una palabra que no pertenece al vocabulario. Los errores sintacticos se detectan
+    cuando la secuencia de tokens no cumple la gramatica definida en CUP.
+  </p>
+  <p>Ejemplos de codigos de error:</p>
+  <pre>ORACION_VACIA
+NUMERO_NO_PERMITIDO
+SIGNO_NO_PERMITIDO
+PALABRA_NO_RECONOCIDA
+FALTA_SUJETO
+FALTA_VERBO
+ORDEN_INCORRECTO
+CONCORDANCIA_INVALIDA
+COMPLEMENTO_INVALIDO</pre>
+
+  <h2>8. Pruebas Realizadas</h2>
+  <p>
+    Se ejecutaron las pruebas automatizadas del backend para comprobar que la integracion con JFlex y CUP mantiene
+    el comportamiento esperado.
+  </p>
+  <pre>cd backend
+mvn clean test</pre>
+  <p>Resultado esperado:</p>
+  <pre>Tests run: 29, Failures: 0, Errors: 0, Skipped: 0</pre>
+
+  <p>Tambien se verifico el build del frontend:</p>
+  <pre>cd frontend
+npm run build</pre>
+
+  <h2>9. Comandos para Ejecutar el Proyecto</h2>
+  <h3>Backend</h3>
+  <pre>cd backend
+mvn spring-boot:run</pre>
+  <p>URL del backend:</p>
+  <pre>http://localhost:5000</pre>
+
+  <h3>Frontend</h3>
+  <pre>cd frontend
+npm run dev</pre>
+  <p>URL del frontend:</p>
+  <pre>http://localhost:5173</pre>
+
+  <h2>10. Explicacion Corta para Sustentar</h2>
+  <p>
+    Se reemplazo el analizador manual por una integracion formal con JFlex y CUP. JFlex se encarga del analisis
+    lexico, convirtiendo cada palabra en un token. CUP se encarga del analisis sintactico, validando esos tokens
+    con la gramatica libre de contexto del proyecto. Luego se construye el mismo resultado que ya usaba el frontend:
+    tabla de tokens, derivacion, arbol, sujeto, verbo, complemento y errores. De esta manera, el programa conserva
+    la misma interfaz, pero internamente usa analizadores generados.
+  </p>
+
+  <h2>11. Estado Final</h2>
+  <p>
+    Los cambios fueron probados, documentados y subidos al repositorio de GitHub. El proyecto queda listo para
+    ejecutarse con Maven y Vite, y los archivos generados por JFlex y CUP se crean automaticamente al compilar.
+  </p>
+</body>
+</html>
