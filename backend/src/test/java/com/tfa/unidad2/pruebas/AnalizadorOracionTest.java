@@ -114,7 +114,7 @@ class AnalizadorOracionTest {
 
     @Test
     void aceptaSignosFinalesPermitidos() {
-        ResultadoAnalisis resultado = casoUso.analizar("¿El perro corre rapido?");
+        ResultadoAnalisis resultado = casoUso.analizar("\u00bfEl perro corre rapido?");
 
         assertTrue(resultado.isValida());
         assertEquals("El perro", resultado.getSujeto());
@@ -160,7 +160,7 @@ class AnalizadorOracionTest {
 
     @Test
     void generaDerivacionPorLaIzquierdaConComplementoPreposicionalDoble() {
-        ResultadoAnalisis resultado = casoUso.analizar("El perro mordió al hombre en el parque.");
+        ResultadoAnalisis resultado = casoUso.analizar("El perro mordi\u00f3 al hombre en el parque.");
 
         assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SN C"));
         assertTrue(resultado.getDerivacion().contains("ART SUST V PREP SUST PREP SN"));
@@ -180,7 +180,7 @@ class AnalizadorOracionTest {
 
     @Test
     void detectaAmbiguedadSintactica() {
-        ResultadoAnalisis resultado = casoUso.analizar("El perro mordió al hombre en el parque.");
+        ResultadoAnalisis resultado = casoUso.analizar("El perro mordi\u00f3 al hombre en el parque.");
 
         assertTrue(resultado.isValida());
         assertTrue(resultado.isAmbiguo());
@@ -201,8 +201,8 @@ class AnalizadorOracionTest {
     private static Stream<Arguments> oracionesValidas() {
         return Stream.of(
                 Arguments.of("El perro corre rapido.", "El perro", "corre", "rapido"),
-                Arguments.of("La niña estudia matematicas.", "La niña", "estudia", "matematicas"),
-                Arguments.of("María come arroz.", "María", "come", "arroz"),
+                Arguments.of("La ni\u00f1a estudia matematicas.", "La ni\u00f1a", "estudia", "matematicas"),
+                Arguments.of("Mar\u00eda come arroz.", "Mar\u00eda", "come", "arroz"),
                 Arguments.of("El estudiante lee libros.", "El estudiante", "lee", "libros"),
                 Arguments.of("Nosotros jugamos futbol.", "Nosotros", "jugamos", "futbol"),
                 Arguments.of("Juan escribe una carta.", "Juan", "escribe", "una carta"),
